@@ -1,14 +1,17 @@
 import User from '../models/User.js';
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
-export const registerUser = async (data: any) => {
-  const { name, email, password, role } = data;
+import type { RegisterUserInput, LoginUserInput } from '../types/user.types.js';
+import { hashPassword } from '../utils/hash.js';
+import { createToken } from '../utils/jwt.js';
+
+export const registerUser = async (data: RegisterUserInput) => {
+  const { name, email, password, role = "PATIENT" } = data;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) throw new Error("User already exists");
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await hashPassword(password);
 
   const user = await User.create({
     name,
@@ -20,18 +23,16 @@ export const registerUser = async (data: any) => {
   return user;
 };
 
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async ({ email, password }: LoginUserInput) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("Invalid credentials");
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid credentials");
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET as string,
-    { expiresIn: "7d" }
-  );
+
+
+  const token = createToken(user);
 
   return { user, token };
 };

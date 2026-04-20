@@ -1,17 +1,5 @@
-import mongoose ,{Document,Schema} from "mongoose";
-import { timeStamp } from "node:console";
-
-export interface IUser extends Document{
-    name:string;
-    email:string;
-    password:string;
-    role:"PATIENT"|"DOCTOR"|"ADMIN";
-    phone?:string;
-    specialization?:string;
-    age?:number;
-    experience?:number;
-    gender?:string;
-}
+import mongoose, { Schema } from "mongoose";
+import type { IUser } from "../types/user.types.js";
 
 const userSchema= new Schema<IUser>(
     {
